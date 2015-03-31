@@ -1,0 +1,5 @@
+0: Times the file was opened
+1: Times Player 1 won vs KI
+2: Times KI won vs Player 1
+3: Times Player1 won against Player2
+4: Times Player2 won against Player1
