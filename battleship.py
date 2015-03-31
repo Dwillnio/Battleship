@@ -161,8 +161,8 @@ def user_gen_ships(board,ships_n_l):  #lets user generate a certain ships -> det
                 for x in ship[0]: ships[0].append(x)
                 for x in ship[1]: ships[1].append(x)
             else:
-                print (str(check_if_ship_straight(ship)) + str(check_if_ship_ocean(ship,board)) + str(check_ship_collisions(ship,ships)))
-                print (str(check_if_stacked(ship)) + str(check_if_ship_line(ship)))
+                #print (str(check_if_ship_straight(ship)) + str(check_if_ship_ocean(ship,board)) + str(check_ship_collisions(ship,ships)))
+                #print (str(check_if_stacked(ship)) + str(check_if_ship_line(ship)))
                 print ("ERROR")
                 ships = [[],[]]
                 ships_n_l = copy(c_ships_n_l)
@@ -296,6 +296,7 @@ def battleship_KI(board,ships_n_l): #P vs AI mode main function
             if KI_ship_count <= 0:
                 print_board(KI_board)
                 print ("You won!")
+                file_add_one("statistics.txt",convert_file("statistics.txt"),1)
                 return True #True = user won
         else:
             user_board[u_guess[0]][u_guess[1]] = "X"
@@ -310,6 +311,7 @@ def battleship_KI(board,ships_n_l): #P vs AI mode main function
             if user_ship_count <= 0:
                 print_board(KI_board)
                 print ("The AI won")
+                file_add_one("statistics.txt",convert_file("statistics.txt"),2)
                 return False #False = user lost
         else:
             KI_board[K_guess[0]][K_guess[1]] = "X"
@@ -336,6 +338,7 @@ def battleship_2p(board,ships_n_l): #P vs P mode main function
             print ("Player1 Hit!")
             if user2_ship_count <= 0:
                 print("User 1 won!")
+                file_add_one("statistics.txt",convert_file("statistics.txt"),3)
                 return True #True = user1 won
         else:
             user1_board[u1_guess[0]][u1_guess[1]] = "X"
@@ -351,20 +354,91 @@ def battleship_2p(board,ships_n_l): #P vs P mode main function
             print ("Player2 hit!")
             if user1_ship_count <= 0:
                 print("User 2 won!")
+                file_add_one("statistics.txt",convert_file("statistics.txt"),4)
                 return False #False = user2 won
         else:
             user2_board[u2_guess[0]][u2_guess[1]] = "X"
             print("Miss")
 
 
-def main(turns,ships_n_l,board): #lets the user decide what he wants to play
+def convert_file(s_file):  #converts file format into list with each index = line and type = int
+    list =[]
+    r_file = open(s_file, "r")
+    container = r_file.read()
+    r_file.seek(0,0)
+    for line in range(container.count("\n")):
+        line = r_file.readline()
+        list.append(int(line.replace("\n", "")))
+    return list
+
+
+def file_add_one(filename,values,index):  #rewrites a file so that a certain line += 1
+    values[index] += 1
+    file = open(filename, "w")
+    for x in values:
+        file.write(str(x) + "\n")
+    file.close()
+
+
+def file_change_value(filename,values,index,new_value):
+    values[index] = new_value
+    file = open(filename, "w")
+    for x in values:
+        file.write(str(x) + "\n")
+    file.close()
+
+
+def display_stats():
+    stats = convert_file("statistics.txt")
+    print ("\n\nBattleship has been run %s times" %(stats[0]))
+    if stats[1] + stats[2] > 0:
+        wr_AI = float(stats[1]) / (stats[1] + stats[2]) * 100
+    else: wr_AI = "ERROR"
+    print ("While Playing against the AI you won %s out of %s times(Winrate: %s%%)" %(stats[1], (stats[1] + stats[2]), wr_AI))
+    if stats[3] + stats[4] > 0:
+        wr_pvp = float(stats[3]) / (stats[3] + stats[4]) * 100
+    else: wr_pvp = "ERROR"
+    print ("In PvP out of %s times, Player1 won %s times and Player2 won %s times (P1 Winrate: %s%%)\n" %((stats[3] + stats[4]), stats[3], stats[4], wr_pvp))
+    dec = input("Reset stats?(y/n): ")
+    if dec == "y":
+        reset_file("statistics.txt")
+    print ("\n")
+
+
+def change_options():
+    index = int(input("What do you want to change?(Use number from options_key.txt): "))
+    value = int(input("What value do you want to apply to it?: "))
+    file_change_value("options.txt", convert_file("options.txt"), index, value)
+    print ("Done!(Some changes may require a restart)")
+
+
+def reset_file(filename):
+    file_r = open(filename, "r")
+    count_nl = file_r.read().count("\n")
+    file_r.close()
+    file_w = open(filename, "w")
+    for x in range(count_nl):
+        file_w.write("0\n")
+    file_w.close()
+
+
+def main():  #lets the user decide what he wants to play and reads options
+    options = convert_file("options.txt")
+    board = gen_board(options[3])
+    ships_n_l = []
+    for x in str(options[4]):
+        ships_n_l.append(int(x))
+    file_add_one("statistics.txt",convert_file("statistics.txt"),0)
     while True:
-        dec = input("What do you want to play(1:Solo ; 2:P vs AI ; 3:P vs P): ")
-        if dec == "1": battleship_solo(board,turns,ships_n_l) #starts solo mode function
-        elif dec == "2": battleship_KI(board,ships_n_l) #starts P vs AI mode function
-        elif dec == "3": battleship_2p(board,ships_n_l) #starts P vs P mode function
+        if options[1] == 0:
+            options[0] = int(input("What do you want to do(1:Solo ; 2:P vs AI ; 3:P vs P ; 4:Stats ; 5:Options): "))
+        if options[0] == 1: battleship_solo(board,options[2],ships_n_l) #starts solo mode function
+        elif options[0] == 2: battleship_KI(board,ships_n_l) #starts P vs AI mode function
+        elif options[0] == 3: battleship_2p(board,ships_n_l) #starts P vs P mode function
+        elif options[0] == 4: display_stats()  #displays stats
+        elif options[0] == 5: change_options()  #allows user to change options
         else: break
 
 
 
-main(15,[4,3,2,1],gen_board(8))
+main()
