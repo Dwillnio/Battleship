@@ -1,0 +1,5 @@
+0: Gamemode(1/2/3)
+1: Automatic Gamemode Selection (0:NO ; 1: YES)
+2: Turns
+3: Map length
+4: Number Ships || Format: 423 means 4 one-tile ships, 2 two-tile ships 3, three-tile ships
